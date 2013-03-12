@@ -40,7 +40,6 @@ class DataFile(object):
         reader = csv.reader(fh)
         reader.next()
         self.data = {}
-        self.protFiles = {}
         for elem in reader:
             self.data[elem[0]] = Protein(float(elem[5]),
                 float(elem[6]), float(elem[7]),
@@ -51,14 +50,13 @@ class DataFile(object):
         fh.close()
 
 
-
 class DataSet(object):
     """ DataSet for Protein Energy Function Project in Pattern Rec
         Initialization will load all files as numpy 2d arrays with appropriate
         info
         Walk all files in that directory, open each csv, store it in memory
         close the files"""
-    
+
     def __init__(self):
         pass
 
