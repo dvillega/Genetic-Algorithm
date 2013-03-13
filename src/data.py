@@ -2,52 +2,29 @@ import os
 import numpy as np
 import csv
 
-class Protein(object):
-    def __init__(self):
-        self.Ereg = 0.0
-        self.Ep1 = 0.0
-        self.Ep2 = 0.0
-        self.Enp = 0.0
-        self.Ephi = 0.0
-        self.Epsi = 0.0
-        self.Esa = 0.0
-        self.TMScore = 0.0
-        self.Serial = ''
-        self.FileName = ''
-        self.Native = False
-
-    def __init__(self,Ereg,Ep1,Ep2,Enp,Ephi,Epsi,Esa,TMScore,Serial,FileName,Native):
-        self.Ereg = Ereg
-        self.Ep1 = Ep1
-        self.Ep2 = Ep2
-        self.Enp = Enp
-        self.Ephi = Ephi
-        self.Epsi = Epsi
-        self.Esa = Esa
-        self.TMScore = TMScore
-        self.Serial = Serial
-        self.FileName = FileName
-        self.Native = Native
-
+""" Master Data handling code"""
 
 class DataFile(object):
-    """ One protein file from a given DataSet """
+    """ One protein file from a given DataSet
+    Represented as a numpy array"""
     def __init__(self):
         pass
 
     def __init__(self,fpath):
-        fh = open(fpath)
-        reader = csv.reader(fh)
-        reader.next()
-        self.data = {}
-        for elem in reader:
-            self.data[elem[0]] = Protein(float(elem[5]),
-                float(elem[6]), float(elem[7]),
-                float(elem[8]), float(elem[9]),
-                float(elem[10]), float(elem[11]),
-                float(elem[4]),elem[0],
-                elem[1],bool(elem[2]))
-        fh.close()
+        self.data = np.genfromtxt(fpath,delimiter=',')[1:]
+        self.Ereg = self.data[:,5]
+        rows = len(self.Ereg)
+        Ep1 = self.data[:,6]
+        Ep2 = self.data[:,7]
+        Enp = self.data[:,8]
+        Ephi = self.data[:,9]
+        Epsi = self.data[:,10]
+        Esa = self.data[:,11]
+        self.TMScore = self.data[:,4]
+        self.Serial = self.data[:,0]
+        self.Native = self.data[:,2]
+        self.eData = np.concatenate((Ereg,Ep1,Ep2,Enp,Ephi,Epsi,Esa))
+        self.eData = np.reshape(self.eData,(rows,7))
 
 
 class DataSet(object):
@@ -63,8 +40,8 @@ class DataSet(object):
     def __init__(self,name):
         self.name = name
         self.dataSetPath = "../data/DataSet" + name
-        self.dataFiles = []
+        self.dataFiles = {}
         foo = os.walk(self.dataSetPath)
         bar = foo.next()
         for elem in bar[2]:
-            self.dataFiles.append(DataFile(self.dataSetPath + "/" + elem))
+            self.dataFiles[elem] = DataFile(self.dataSetPath + "/" + elem)

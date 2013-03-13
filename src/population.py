@@ -6,27 +6,29 @@ random"""
 
 class Population(object):
 
-    def __init__(self,initialize):
+    def __init__(self,initialize,geneLength,betaMax):
         self.pop= []
+        self.betaMax = betaMax
+        self.geneLength = geneLength
         if initialize:
             for i in xrange(200):
-                self.pop.append((self.rand4BitGeneM1(),float(i)))
+                self.pop.append((self.randBitGeneM1(),float(i)))
 
-    # Generates a random 4 bit gene
-    def rand4BitGeneM1(self):
+    # Generates a random length bit gene
+    def randBitGeneM1(self):
         # The bin function truncates leading zeros,
         # so we need the while loop to make sure all 
-        # genes are of len 4
-        foo = bin(np.random.randint(0,16))[2:]
-        while(len(foo) != 4):
+        # genes are of appropriate length
+        foo = bin(np.random.randint(0,2**self.geneLength))[2:]
+        while(len(foo) != self.geneLength):
             foo = "0" + foo
-        a = bitarray(foo)
-        for i in xrange(7):
-            foo = bin(np.random.randint(0,16))[2:]
-            while (len(foo) != 4):
+        returnVal = bitarray(foo)
+        for i in xrange(6):
+            foo = bin(np.random.randint(0,2**self.geneLength))[2:]
+            while (len(foo) != self.geneLength):
                 foo = "0" + foo
-            a.extend(bitarray(foo))
-        return a
+            returnVal.extend(bitarray(foo))
+        return returnVal
 
     def sortedPopulation(self):
         self.pop = sorted(self.pop,key = lambda x: x[1], reverse=True)
@@ -34,10 +36,11 @@ class Population(object):
 
     # Can loop through and update population fitness scores as we go
 
-    def bit2BSingle(self,bitVals):
+    # Currently covers 0-max beta values
+    def bit2BGene(self,bitVals):
         length = len(bitVals)
-        delta = 0.125
-        beta = 0.125
+        delta = float(self.betaMax)/(2**length)
+        beta = delta
         for i,elem in enumerate(bitVals):
             foo = 2**(length-(i+1)) * elem
             beta += (foo * delta)
@@ -48,9 +51,21 @@ class Population(object):
         splits = [bitVals[i:i+4] for i in range(0,len(bitVals), 4)]
         newBetas = []
         for elem in splits:
-            newBetas.append(self.bit2BSingle(elem))
+            newBetas.append(self.bit2BGene(elem))
         return np.array(newBetas)
 
-    def eliteSet(self,percent):
+    # Returns the top percent of our population according to fitness
+    # Default 10%
+    def eliteSet(self,percent = 10):
         length = len(self.pop) * percent / 100
         return self.sortedPopulation()[0:length]
+
+    # Applies mutation to all but the elite set - skip random set
+    def mutationSet(self,popToMutate):
+        # Mutation code here
+         pass
+
+    # Apply crossover to all but the elite set - skip random
+    def crossoverSet(self):
+        # Crossover code here
+        pass
