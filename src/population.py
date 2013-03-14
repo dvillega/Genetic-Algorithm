@@ -38,9 +38,9 @@ class Chromosome(object):
     def randomizeGenes(self):
         # Randomize this chromosome's genes
         self.genes = []
-        for i in xrange(self.geneLength):
+        for i in xrange(self.numGenes):
             self.genes.append(bitarray(np.binary_repr(
-                np.random.randint(0,2**self.geneLength),width=geneLength)))
+                np.random.randint(0,2**self.geneLength),width=self.geneLength)))
 
     def mutateGene(self):
         pos = np.random.randint(0,self.geneLength*self.numGenes)
@@ -53,11 +53,12 @@ class Chromosome(object):
 
 class Population(object):
 
-    # Normal Constructor 
-    def __init__(self,geneLength,betaMax,popSize,initialize=True):
+    # Constructor 
+    def __init__(self,geneLength,betaMax,popSize,mutationRate=0.025,initialize=True):
         self.pop= []
         self.betaMax = betaMax
         self.geneLength = geneLength
+        self.mutationRate = mutationRate
         self.popSize = popSize
         self.numGenes = 7
         if initialize:
@@ -67,6 +68,7 @@ class Population(object):
             for i in xrange(popSize):
                 self.pop.append(Chromosome(self.geneLength,self.numGenes,self.betaMax,False))
 
+    # Returns sorted by fitness population
     def sortedPopulation(self):
         self.pop = sorted(self.pop,key = lambda x: x.fitness, reverse=True)
         return self.pop
@@ -77,17 +79,16 @@ class Population(object):
         length = len(self.pop) * percent / 100
         return self.sortedPopulation()[0:length]
 
-    # Applies mutation to all but the elite set - skip random set
-    def mutationSet(self,popToMutate):
-        # Mutation code here
-         pass
-
     # Apply update your pos1 and pos2 genes
     def applyCrossover(self,pos1,pos2,genes):
         self.pop[pos1].genes = genes[0]
         self.pop[pos2].genes = genes[1]
+        if np.random.random < self.mutationRate:
+            self.pop[pos1].mutateGene()
+        if np.random.random < self.mutationRate:
+            self.pop[pos2].mutateGene()
 
-    # Apply crossover to all but the elite set - skip random
+    # return 2 selected genes crossed over
     def crossover(self,pos1,pos2):
         first = self.pop[pos1].genes
         second = self.pop[pos2].genes
@@ -103,43 +104,4 @@ class Population(object):
                 range(0,len(newFirst),self.geneLength)])
         newGenes.append([bitarray(newSecond[i:i+self.geneLength]) for i in
                 range(0,len(newSecond),self.geneLength)])
-#        self.pop[pos1].genes = [bitarray(newFirst[i:i+self.geneLength]) for i in
-#                range(0,len(newFirst),self.geneLength)]
-#        self.pop[pos2].genes = [bitarray(newSecond[i:i+self.geneLength]) for i in
-#                range(0,len(newSecond),self.geneLength)]
         return newGenes
-
-
-"""    # Generates a random length bit gene
-    def randBitGeneM1(self):
-        # The bin function truncates leading zeros,
-        # so we need the while loop to make sure all
-        # genes are of appropriate length
-        foo = bin(np.random.randint(0,2**self.geneLength))[2:]
-        while(len(foo) != self.geneLength):
-            foo = "0" + foo
-        returnVal = bitarray(foo)
-        for i in xrange(6):
-            foo = bin(np.random.randint(0,2**self.geneLength))[2:]
-            while (len(foo) != self.geneLength):
-                foo = "0" + foo
-            returnVal.extend(bitarray(foo))
-        return returnVal
-"""
-"""    # Currently covers 0-max beta values
-    def bit2BGene(self,bitVals):
-        length = len(bitVals)
-        delta = float(self.betaMax)/(2**length)
-        beta = delta
-        for i,elem in enumerate(bitVals):
-            foo = 2**(length-(i+1)) * elem
-            beta += (foo * delta)
-        return beta
-    def bit2BChromo(self,bitVals):
-        # Split chromosome into 4 len bit arrays
-        splits = [bitVals[i:i+4] for i in range(0,len(bitVals), 4)]
-        newBetas = []
-        for elem in splits:
-            newBetas.append(self.bit2BGene(elem))
-        return np.array(newBetas)
-"""
