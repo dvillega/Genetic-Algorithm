@@ -4,55 +4,72 @@ from bitarray import bitarray
 If we pass true to the constructor then the population will initialize as
 random"""
 
-class Population(object):
+class Chromosome(object):
 
-    def __init__(self,initialize,geneLength,betaMax):
-        self.pop= []
-        self.betaMax = betaMax
+    def __init__(self,geneLength,numGenes,betaMax,initialize=True):
         self.geneLength = geneLength
+        self.fitness = 0.0
+        self.betaMax = betaMax
+        self.genes = []
+        self.numGenes = numGenes
         if initialize:
-            for i in xrange(200):
-                self.pop.append((self.randBitGeneM1(),float(i)))
+            for i in xrange(self.numGenes):
+                self.genes.append(bitarray(np.binary_repr(np.random.randint(0,2**self.geneLength),width=self.geneLength)))
 
-    # Generates a random length bit gene
-    def randBitGeneM1(self):
-        # The bin function truncates leading zeros,
-        # so we need the while loop to make sure all 
-        # genes are of appropriate length
-        foo = bin(np.random.randint(0,2**self.geneLength))[2:]
-        while(len(foo) != self.geneLength):
-            foo = "0" + foo
-        returnVal = bitarray(foo)
-        for i in xrange(6):
-            foo = bin(np.random.randint(0,2**self.geneLength))[2:]
-            while (len(foo) != self.geneLength):
-                foo = "0" + foo
-            returnVal.extend(bitarray(foo))
-        return returnVal
-
-    def sortedPopulation(self):
-        self.pop = sorted(self.pop,key = lambda x: x[1], reverse=True)
-        return self.pop
-
-    # Can loop through and update population fitness scores as we go
-
-    # Currently covers 0-max beta values
-    def bit2BGene(self,bitVals):
-        length = len(bitVals)
-        delta = float(self.betaMax)/(2**length)
+    def betaFromGene(self,gene):
+        # Expects a numpy array of bools as a gene, returns a
+        # real value beta from our gene
+        delta = float(self.betaMax)/(2**self.geneLength)
         beta = delta
-        for i,elem in enumerate(bitVals):
-            foo = 2**(length-(i+1)) * elem
+        for i,val in enumerate(gene):
+            foo = 2**(self.geneLength-(i+1)) * val
             beta += (foo * delta)
         return beta
 
-    def bit2BChromo(self,bitVals):
-        # Split chromosome into 4 len bit arrays
-        splits = [bitVals[i:i+4] for i in range(0,len(bitVals), 4)]
+    def copyGenes(self,genes):
+        self.genes = genes
+
+    def betas(self):
         newBetas = []
-        for elem in splits:
-            newBetas.append(self.bit2BGene(elem))
+        for elem in self.genes:
+            newBetas.append(self.betaFromGene(elem))
         return np.array(newBetas)
+
+    def randomizeGenes(self):
+        # Randomize this chromosome's genes
+        self.genes = []
+        for i in xrange(self.geneLength):
+            self.genes.append(bitarray(np.binary_repr(
+                np.random.randint(0,2**self.geneLength),width=geneLength)))
+
+    def mutateGene(self):
+        pos = np.random.randint(0,self.geneLength*self.numGenes)
+        genePos = pos / self.geneLength
+        flipBit = pos % self.geneLength
+        print genePos,flipBit
+        self.genes[genePos][flipBit] = not self.genes[genePos][flipBit]
+
+
+
+class Population(object):
+
+    # Normal Constructor 
+    def __init__(self,geneLength,betaMax,popSize,initialize=True):
+        self.pop= []
+        self.betaMax = betaMax
+        self.geneLength = geneLength
+        self.popSize = popSize
+        self.numGenes = 7
+        if initialize:
+            for i in xrange(popSize):
+                self.pop.append(Chromosome(self.geneLength,self.numGenes,self.betaMax))
+        else:
+            for i in xrange(popSize):
+                self.pop.append(Chromosome(self.geneLength,self.numGenes,self.betaMax,False))
+
+    def sortedPopulation(self):
+        self.pop = sorted(self.pop,key = lambda x: x.fitness, reverse=True)
+        return self.pop
 
     # Returns the top percent of our population according to fitness
     # Default 10%
@@ -65,7 +82,64 @@ class Population(object):
         # Mutation code here
          pass
 
+    # Apply update your pos1 and pos2 genes
+    def applyCrossover(self,pos1,pos2,genes):
+        self.pop[pos1].genes = genes[0]
+        self.pop[pos2].genes = genes[1]
+
     # Apply crossover to all but the elite set - skip random
-    def crossoverSet(self):
-        # Crossover code here
-        pass
+    def crossover(self,pos1,pos2):
+        first = self.pop[pos1].genes
+        second = self.pop[pos2].genes
+        firstString = [x for sublist in first for x in sublist]
+        secondString = [x for sublist in second for x in sublist]
+        pos = np.random.randint(0,len(firstString))
+        newFirst = firstString[:pos]
+        newSecond = secondString[:pos]
+        newFirst.extend(secondString[pos:])
+        newSecond.extend(firstString[pos:])
+        newGenes = []
+        newGenes.append([bitarray(newFirst[i:i+self.geneLength]) for i in
+                range(0,len(newFirst),self.geneLength)])
+        newGenes.append([bitarray(newSecond[i:i+self.geneLength]) for i in
+                range(0,len(newSecond),self.geneLength)])
+#        self.pop[pos1].genes = [bitarray(newFirst[i:i+self.geneLength]) for i in
+#                range(0,len(newFirst),self.geneLength)]
+#        self.pop[pos2].genes = [bitarray(newSecond[i:i+self.geneLength]) for i in
+#                range(0,len(newSecond),self.geneLength)]
+        return newGenes
+
+
+"""    # Generates a random length bit gene
+    def randBitGeneM1(self):
+        # The bin function truncates leading zeros,
+        # so we need the while loop to make sure all
+        # genes are of appropriate length
+        foo = bin(np.random.randint(0,2**self.geneLength))[2:]
+        while(len(foo) != self.geneLength):
+            foo = "0" + foo
+        returnVal = bitarray(foo)
+        for i in xrange(6):
+            foo = bin(np.random.randint(0,2**self.geneLength))[2:]
+            while (len(foo) != self.geneLength):
+                foo = "0" + foo
+            returnVal.extend(bitarray(foo))
+        return returnVal
+"""
+"""    # Currently covers 0-max beta values
+    def bit2BGene(self,bitVals):
+        length = len(bitVals)
+        delta = float(self.betaMax)/(2**length)
+        beta = delta
+        for i,elem in enumerate(bitVals):
+            foo = 2**(length-(i+1)) * elem
+            beta += (foo * delta)
+        return beta
+    def bit2BChromo(self,bitVals):
+        # Split chromosome into 4 len bit arrays
+        splits = [bitVals[i:i+4] for i in range(0,len(bitVals), 4)]
+        newBetas = []
+        for elem in splits:
+            newBetas.append(self.bit2BGene(elem))
+        return np.array(newBetas)
+"""

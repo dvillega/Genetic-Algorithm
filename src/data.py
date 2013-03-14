@@ -12,8 +12,8 @@ class DataFile(object):
 
     def __init__(self,fpath):
         self.data = np.genfromtxt(fpath,delimiter=',')[1:]
-        self.Ereg = self.data[:,5]
-        rows = len(self.Ereg)
+        Ereg = self.data[:,5]
+        rows = len(Ereg)
         Ep1 = self.data[:,6]
         Ep2 = self.data[:,7]
         Enp = self.data[:,8]
@@ -23,8 +23,8 @@ class DataFile(object):
         self.TMScore = self.data[:,4]
         self.Serial = self.data[:,0]
         self.Native = self.data[:,2]
-        self.eData = np.concatenate((Ereg,Ep1,Ep2,Enp,Ephi,Epsi,Esa))
-        self.eData = np.reshape(self.eData,(rows,7))
+        self.eData = np.column_stack((Ereg,Ep1,Ep2,Enp,Ephi,Epsi,Esa))
+#        self.eData = np.reshape(self.eData,(rows,7))
 
 
 class DataSet(object):
