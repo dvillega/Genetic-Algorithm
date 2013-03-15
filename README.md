@@ -19,3 +19,5 @@ Class - Genetic Algorithm
     Initialization
 
     Takes a given dataset, runs the algorithm?
+
+pop.py is an ipython initialization script

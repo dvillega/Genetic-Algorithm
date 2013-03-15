@@ -46,10 +46,11 @@ class Chromosome(object):
         pos = np.random.randint(0,self.geneLength*self.numGenes)
         genePos = pos / self.geneLength
         flipBit = pos % self.geneLength
-        print genePos,flipBit
         self.genes[genePos][flipBit] = not self.genes[genePos][flipBit]
 
-
+    def __str__(self):
+        returnVal = ",".join( [ str(element)[10:14] for element in self.genes ] )
+        return returnVal + ',fitness=' + str(self.fitness)
 
 class Population(object):
 
@@ -83,9 +84,9 @@ class Population(object):
     def applyCrossover(self,pos1,pos2,genes):
         self.pop[pos1].genes = genes[0]
         self.pop[pos2].genes = genes[1]
-        if np.random.random < self.mutationRate:
+        if np.random.random() < self.mutationRate:
             self.pop[pos1].mutateGene()
-        if np.random.random < self.mutationRate:
+        if np.random.random() < self.mutationRate:
             self.pop[pos2].mutateGene()
 
     # return 2 selected genes crossed over
@@ -105,3 +106,28 @@ class Population(object):
         newGenes.append([bitarray(newSecond[i:i+self.geneLength]) for i in
                 range(0,len(newSecond),self.geneLength)])
         return newGenes
+
+    # Increment this empty population as the GA step of our parameter
+    # Population
+    #       1- Copy the otherPop's eliteSet into our top 10%
+    #       2- Take randomized crossover for 80% (Implement roulette choice)
+    #       3- While taking crossovers we are doing mutations
+    #       4- Fill last 10% with random
+    def stepGeneration(self, otherPop):
+        # Magic Number apply eliteSet
+        self.pop[0:20] = otherPop.eliteSet()
+
+        # Crossover for 80% - Magic Number - 200 population - 80% is 160
+        # So we apply 80 crossovers
+
+        for i in xrange(80):
+            pos1 = np.random.randint(0,200)
+            pos2 = np.random.randint(0,200)
+            nextPos = 20 + i*2
+            self.applyCrossover(nextPos,nextPos + 1,otherPop.crossover(pos1,pos2))
+        # Randomize last 10% - HOORAY
+        for elem in self.pop[160:]:
+            elem.randomizeGenes()
+
+    def __str__(self):
+        return "\n".join( [ str(element) for element in self.pop] )

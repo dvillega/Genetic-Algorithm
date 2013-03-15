@@ -34,9 +34,6 @@ class DataSet(object):
         Walk all files in that directory, open each csv, store it in memory
         close the files"""
 
-    def __init__(self):
-        pass
-
     def __init__(self,name):
         self.name = name
         self.dataSetPath = "../data/DataSet" + name
