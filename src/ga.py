@@ -27,12 +27,14 @@ model = int(sys.argv[1])
 outFilePath = sys.argv[2]
 generations = int(sys.argv[3])
 
-c8 = data.DataSet('C8',model)
-R = data.DataSet('R',model)
-M = data.DataSet('M',model)
-T = data.DataSet('T',model)
+c8 = data.DataSet('C8')
+R = data.DataSet('R')
+M = data.DataSet('M')
+T = data.DataSet('T')
 
 dataSetList = [c8, R, M, T]
+for elem in dataSetList:
+    elem.setModel(model)
 
 loadTime = time() - start
 
@@ -49,6 +51,7 @@ outFH.write('Starting Population \n')
 outFH.write(pop1.topBetas())
 
 for i in xrange(generations):
+    print "Generation: " + str(i)
     pop2.stepGeneration(pop1)
     for elem in pop2:
         elem.fitness = FIT.calculateTotalFitness(elem,dataSetList)
@@ -59,7 +62,7 @@ for i in xrange(generations):
 pop1.sortPopulation()
 outFH.write('\n\nFinal\n')
 topPop=pop1.pop[0]
-outFH.write(topPop.betas() + '\n')
+outFH.write(str(topPop.betas()) + '\n')
 outFH.close()
 
 # Calculate C9 info
