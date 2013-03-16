@@ -38,13 +38,64 @@ def printFVals(fVals):
     return results
 
 
-def runGA():
+def runGA(model,outFile):
     """ 
     Genetic Algorithm Engine
 
-    This script will run GA on each of our models, writing out the result
+    This script will run GA on one model, writing out the result 
     """
-    pass
+    print "Starting GA with " + str(generations) + " on model # " + str(model)
+
+    FIT = fitness.Fitness(True)
+    pop1 = population.Population(12,4.0,200,numGenes=f(model),initialize=True)
+    pop2 = population.Population(12,4.0,200,numGenes=f(model),initialize=False)
+    outFH = open(outFile,'w')
+    for elem in pop1:
+        elem.fitness = FIT.calculateTotalFitness(elem,dataSetList)
+    pop1.sortPopulation()
+    outFH.write('Starting Population \n')
+    outFH.write(pop1.topBetas())
+    outFH.write(printFVals(pop1.pop[0].fVals))
+
+    count = 0
+    for i in xrange(generations):
+        print "Generation: " + str(i)
+        pop2.stepGeneration(pop1)
+        for elem in pop2:
+            elem.fitness = FIT.calculateTotalFitness(elem,dataSetList)
+        pop2.sortPopulation()
+        outFH.write(pop2.topBetas())
+        outFH.write(printFVals(pop1.pop[0].fVals))
+        if pop1.pop[0].genes != pop2.pop[0].genes:
+            print "Updated Top Beta"
+        pop1 = copy.deepcopy(pop2)
+
+    pop1.sortPopulation()
+    outFH.write('\n\nFinal\n')
+    topPop=pop1.pop[0]
+    outFH.write(str(topPop.betas()) + '\n')
+    outFH.write(printFVals(pop1.pop[0].fVals))
+
+    # Calculate C9 info
+    c9 = data.DataSet('C9')
+    c9.setModel(model)
+    topFitC9 = FIT.calculateFitness(topPop,c9)
+    outFH.write('F1 = ' + str(-topFitC9[0]) + ' F2 = ' + str(topFitC9[1]) + '\n')
+    ZFinal = FIT.calculateZScore(topPop,dataSetList,model)
+    outFH.write('Per File:' + str(ZFinal[0]) + '\n')
+    outFH.write('Zavg: ' + str(ZFinal[1]))
+    outFH.close()
+
+def loadData(model):
+    c8 = data.DataSet('C8')
+    R = data.DataSet('R')
+    M = data.DataSet('M')
+    T = data.DataSet('T')
+
+    dataSetList = [c8, R, M, T]
+    for elem in dataSetList:
+        elem.setModel(model)
+    return dataSetList
 
 
 ### Start of Engine Script ###
@@ -61,16 +112,19 @@ model = int(sys.argv[1])
 outFilePath = sys.argv[2]
 generations = int(sys.argv[3])
 
-c8 = data.DataSet('C8')
-R = data.DataSet('R')
-M = data.DataSet('M')
-T = data.DataSet('T')
+dataSetList = loadData(1)
 
-dataSetList = [c8, R, M, T]
-for elem in dataSetList:
-    elem.setModel(model)
+for i in range(1,7):
+    for j in range(10):
+        print "Run #" + str(j) + "of 10"
+        # Gonna run this 10 times per
+        for dSet in dataSetList:
+            dSet.setModel(i)
+        outfile = outFilePath + str(i) + "_run" + str(j) + ".dat"
+        runGA(i,outfile)
 
 
+"""
 FIT = fitness.Fitness(True)
 pop1 = population.Population(12,4.0,200,numGenes=f(model),initialize=True)
 pop2 = population.Population(12,4.0,200,numGenes=f(model),initialize=False)
@@ -110,5 +164,5 @@ ZFinal = FIT.calculateZScore(topPop,dataSetList,model)
 outFH.write('Per File:' + str(ZFinal[0]) + '\n')
 outFH.write('Zavg: ' + str(ZFinal[1]))
 outFH.close()
-
+"""
 
