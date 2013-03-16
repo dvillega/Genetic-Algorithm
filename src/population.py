@@ -10,6 +10,7 @@ class Chromosome(object):
     def __init__(self,geneLength,numGenes,betaMax,initialize=True):
         self.geneLength = geneLength
         self.fitness = 0.0
+        self.chromosomeLength = geneLength * numGenes
         self.fVals = {}
         self.betaMax = betaMax
         self.genes = []
@@ -43,11 +44,13 @@ class Chromosome(object):
             self.genes.append(bitarray(np.binary_repr(
                 np.random.randint(0,2**self.geneLength),width=self.geneLength)))
 
-    def mutateGene(self):
-        pos = np.random.randint(0,self.geneLength*self.numGenes)
-        genePos = pos / self.geneLength
-        flipBit = pos % self.geneLength
-        self.genes[genePos][flipBit] = not self.genes[genePos][flipBit]
+    def mutateGene(self,mutationRate):
+        numMutations = int(mutationRate * float(self.chromosomeLength) / 100.0)
+        for i in xrange(numMutations):
+            pos = np.random.randint(0,self.chromosomeLength)
+            genePos = pos / self.geneLength
+            flipBit = pos % self.geneLength
+            self.genes[genePos][flipBit] = not self.genes[genePos][flipBit]
 
     def __str__(self):
         return 'Total Fitness = ' + str(self.fitness)
@@ -57,11 +60,10 @@ class Chromosome(object):
 class Population(object):
 
     # Constructor 
-    def __init__(self,geneLength,betaMax,popSize,numGenes=7,mutationRate=0.025,initialize=True):
+    def __init__(self,geneLength,betaMax,popSize,numGenes=7,initialize=True):
         self.pop= []
         self.betaMax = betaMax
         self.geneLength = geneLength
-        self.mutationRate = mutationRate
         self.popSize = popSize
         self.numGenes = numGenes
         if initialize:
@@ -86,10 +88,8 @@ class Population(object):
     def applyCrossover(self,pos1,pos2,genes):
         self.pop[pos1].genes = genes[0]
         self.pop[pos2].genes = genes[1]
-        if np.random.random() < self.mutationRate:
-            self.pop[pos1].mutateGene()
-        if np.random.random() < self.mutationRate:
-            self.pop[pos2].mutateGene()
+        self.pop[pos1].mutateGene(np.random.random_integers(5,50))
+        self.pop[pos2].mutateGene(np.random.random_integers(5,50))
 
     # return 2 selected genes crossed over
     def crossover(self,pos1,pos2):
@@ -116,23 +116,28 @@ class Population(object):
     #       3- While taking crossovers we are doing mutations
     #       4- Fill last 10% with random
     def stepGeneration(self, otherPop):
-        # Magic Number apply eliteSet
         self.pop[0:(self.popSize /10)] = otherPop.eliteSet()
+        popTotFit = sum([chromosome.fitness for chromosome in otherPop.pop])
 
-        # Crossover for 80% - Magic Number - 200 population - 80% is 160
-        # So we apply 80 crossovers
+        # Take the normalized fitness as our probabilities to pass to 
+        # numpy.random.choice
+        wheelProb = [(chromosome.fitness / popTotFit) 
+                for chromosome in otherPop.pop]
 
+        # For 40% of the population size, we will step by two and apply crossovers
         for i in xrange((self.popSize * 4) / 10):
-            pos1 = np.random.randint(0,self.popSize)
-            pos2 = np.random.randint(0,self.popSize)
+            # Randomly choose 2 pos w/o replacement using
+            # normalized fitness as our probability
+            choices = np.random.choice(range(self.popSize),2,replace=False,p=wheelProb)
             nextPos = (self.popSize / 10) + (i*2)
-            self.applyCrossover(nextPos,nextPos + 1,otherPop.crossover(pos1,pos2))
+            self.applyCrossover(nextPos,nextPos + 1,otherPop.crossover(choices[0],choices[1]))
         # Randomize last 10% 
         for elem in self.pop[(self.popSize/10) * 9:]:
             elem.randomizeGenes()
 
     def topBetas(self):
-        return str(self.pop[0].betas()) + '\n' + str(self.pop[0].fVals) + '\n'
+        # + str(self.pop[0].fVals) + '\n'
+        return str(self.pop[0].betas()) + '\n'
 
     def __iter__(self):
         for elem in self.pop:
