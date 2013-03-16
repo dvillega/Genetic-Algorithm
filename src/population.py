@@ -10,6 +10,7 @@ class Chromosome(object):
     def __init__(self,geneLength,numGenes,betaMax,initialize=True):
         self.geneLength = geneLength
         self.fitness = 0.0
+        self.fVals = {}
         self.betaMax = betaMax
         self.genes = []
         self.numGenes = numGenes
@@ -49,8 +50,9 @@ class Chromosome(object):
         self.genes[genePos][flipBit] = not self.genes[genePos][flipBit]
 
     def __str__(self):
-        returnVal = ",".join( [ str(element)[10:10+self.geneLength] for element in self.genes ] )
-        return returnVal + ',fitness=' + str(self.fitness)
+        return 'Total Fitness = ' + str(self.fitness)
+#        returnVal = ",".join( [ str(element)[10:10+self.geneLength] for element in self.genes ] )
+#        return returnVal + ',fitness=' + str(self.fitness)
 
 class Population(object):
 
@@ -130,7 +132,7 @@ class Population(object):
             elem.randomizeGenes()
 
     def topBetas(self):
-        return str(self.pop[0].betas()) + '\n'
+        return str(self.pop[0].betas()) + '\n' + str(self.pop[0].fVals) + '\n'
 
     def __iter__(self):
         for elem in self.pop:

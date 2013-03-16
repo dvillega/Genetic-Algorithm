@@ -17,9 +17,9 @@ class Fitness(object):
         if logging:
             self.output = open('Fscores.txt','w')
 
-    def calculateTotalFitness(self,_betas,_dataSetList):
+    def calculateTotalFitness(self,_chromosome,_dataSetList):
         #Calculates Total Fitness
-        #    _betas is a numpy array
+        #    _chromosome is the chromosome
         #    _dataSetList is a list of DataSet objects
 
         totalNumProts = sum([x.numProts for x in _dataSetList])
@@ -30,15 +30,16 @@ class Fitness(object):
         for elem in _dataSetList:
             # Weighting our code with a dataset size average + an ordering
             factor = self.weight(elem.name) + (elem.numProts / totalNumProts)
-            elemFit = self.calculateFitness(_betas,elem)
+            fVal = self.calculateFitness(_chromosome,elem)
+            elemFit = fVal[1] - fVal[0]
             totalFitness += (factor * elemFit)
+            _chromosome.fVals[elem.name] = fVal
 
-        #return totalFitness
         return totalFitness
 
-    def calculateFitness(self,_betas,_dataSet):
+    def calculateFitness(self,_chromosome,_dataSet):
         #Calculates the fitness for an individual dataSet
-        #    _betas is a numpy array
+        #    _chromosome is the chromosome
         #    _dataSet is a single dataset object
         #
         #    fitness = -F1 + F2
@@ -48,7 +49,7 @@ class Fitness(object):
         tmScoreList = []
 
         for protein in _dataSet:
-            eBetter = np.dot(protein.eData,_betas)
+            eBetter = np.dot(protein.eData,_chromosome.betas())
             indexTM = np.argmin(eBetter)
             sumTMScores += protein.TMScore[indexTM]
             eBetterList.append(eBetter)
@@ -58,18 +59,17 @@ class Fitness(object):
                                np.concatenate(tmScoreList))[0]
 
         f2 = sumTMScores / _dataSet.numProts
-        fitness = -f1 + f2
 
         if self.logging:
             self.output.write('\n' + _dataSet.name +'\n')
             self.output.write('F1 = ' + str(f1) + '\n')
             self.output.write('F2 = ' + str(f2) + '\n')
 
-        return fitness
+        return f1,f2
 
     def updateFitness(self,_pop,_dataSetList):
         for chromosome in _pop:
-            chromosome.fitness = self.calcuateTotalFitness(chromosome.betas(),_dataSetList)
+            chromosome.fitness = self.calcuateTotalFitness(chromosome,_dataSetList)
         _pop.sortPopulation()
 
     def weight(self,x):

@@ -36,12 +36,12 @@ class DataFile(object):
             self.eData = np.column_stack((Ereg,Ep1,Ep2,Enp,Ephi,Epsi,Esa))
         elif model == 2:
             Ereg2 = self.square(Ereg)
-            Ep12 = self.square(Ep12)
-            Ep22 = self.square(Ep22)
-            Enp2 = self.square(Enp2)
-            Ephi2 = self.square(Ephi2)
-            Epsi2 = self.square(Epsi2)
-            Esa2 = self.square(Esa2)
+            Ep12 = self.square(Ep1)
+            Ep22 = self.square(Ep2)
+            Enp2 = self.square(Enp)
+            Ephi2 = self.square(Ephi)
+            Epsi2 = self.square(Epsi)
+            Esa2 = self.square(Esa)
             self.eData = np.column_stack((Ereg,Ep1,Ep2,Enp,Ephi,Epsi,Esa,
                                         Ereg2,Ep12,Ep22,Enp2,Ephi2,Epsi2,Esa2))
         elif model == 3:
@@ -59,7 +59,7 @@ class DataFile(object):
             Ephi3 = np.power(Ephi,3)
             Epsi3 = np.power(Epsi,3)
             Esa3 = np.power(Esa,3)
-            self.eData = np.column_stack((ones,Ereg,Ep1,Ep2,Enp,Ephi,Epsi,Esa,
+            self.eData = np.column_stack((Ereg,Ep1,Ep2,Enp,Ephi,Epsi,Esa,
                                         Ereg2,Ep12,Ep22,Enp2,Ephi2,Epsi2,Esa2,
                                         Ereg3,Ep13,Ep23,Enp3,Ephi3,Epsi3,Esa3))
         elif model == 4:
@@ -103,7 +103,7 @@ class DataFile(object):
     def square(self,col):
         sign = np.sign(col)
         square = np.square(col)
-        return np.multiply(np.sign,np.square)
+        return np.multiply(sign,square)
 
 
 class DataSet(object):
