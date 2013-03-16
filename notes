@@ -1,0 +1,9 @@
+Functions to remember
+
+for M ^2 model
+np.sign
+np.square
+
+np.stats.pearsonr(TMSCORES,EBETTER)[0] (returns a tuple)
+
+TMSCORE[np.argmin(EBETTERS)]

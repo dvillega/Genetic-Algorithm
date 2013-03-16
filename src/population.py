@@ -4,6 +4,7 @@ from bitarray import bitarray
 If we pass true to the constructor then the population will initialize as
 random"""
 
+
 class Chromosome(object):
 
     def __init__(self,geneLength,numGenes,betaMax,initialize=True):
@@ -17,8 +18,7 @@ class Chromosome(object):
                 self.genes.append(bitarray(np.binary_repr(np.random.randint(0,2**self.geneLength),width=self.geneLength)))
 
     def betaFromGene(self,gene):
-        # Expects a numpy array of bools as a gene, returns a
-        # real value beta from our gene
+        # returns a real value beta from our gene
         delta = float(self.betaMax)/(2**self.geneLength)
         beta = delta
         for i,val in enumerate(gene):
@@ -49,36 +49,36 @@ class Chromosome(object):
         self.genes[genePos][flipBit] = not self.genes[genePos][flipBit]
 
     def __str__(self):
-        returnVal = ",".join( [ str(element)[10:14] for element in self.genes ] )
+        returnVal = ",".join( [ str(element)[10:10+self.geneLength] for element in self.genes ] )
         return returnVal + ',fitness=' + str(self.fitness)
 
 class Population(object):
 
     # Constructor 
-    def __init__(self,geneLength,betaMax,popSize,mutationRate=0.025,initialize=True):
+    def __init__(self,geneLength,betaMax,popSize,numGenes=7,mutationRate=0.025,initialize=True):
         self.pop= []
         self.betaMax = betaMax
         self.geneLength = geneLength
         self.mutationRate = mutationRate
         self.popSize = popSize
-        self.numGenes = 7
+        self.numGenes = numGenes
         if initialize:
             for i in xrange(popSize):
                 self.pop.append(Chromosome(self.geneLength,self.numGenes,self.betaMax))
         else:
             for i in xrange(popSize):
                 self.pop.append(Chromosome(self.geneLength,self.numGenes,self.betaMax,False))
+        self.sortPopulation()
 
-    # Returns sorted by fitness population
-    def sortedPopulation(self):
+    # Sorts population by fitness 
+    def sortPopulation(self):
         self.pop = sorted(self.pop,key = lambda x: x.fitness, reverse=True)
-        return self.pop
 
     # Returns the top percent of our population according to fitness
     # Default 10%
     def eliteSet(self,percent = 10):
-        length = len(self.pop) * percent / 100
-        return self.sortedPopulation()[0:length]
+        length = (self.popSize * percent) / 100
+        return self.pop[0:length]
 
     # Apply update your pos1 and pos2 genes
     def applyCrossover(self,pos1,pos2,genes):
@@ -115,19 +115,27 @@ class Population(object):
     #       4- Fill last 10% with random
     def stepGeneration(self, otherPop):
         # Magic Number apply eliteSet
-        self.pop[0:20] = otherPop.eliteSet()
+        self.pop[0:(self.popSize /10)] = otherPop.eliteSet()
 
         # Crossover for 80% - Magic Number - 200 population - 80% is 160
         # So we apply 80 crossovers
 
-        for i in xrange(80):
-            pos1 = np.random.randint(0,200)
-            pos2 = np.random.randint(0,200)
-            nextPos = 20 + i*2
+        for i in xrange((self.popSize * 4) / 10):
+            pos1 = np.random.randint(0,self.popSize)
+            pos2 = np.random.randint(0,self.popSize)
+            nextPos = (self.popSize / 10) + (i*2)
             self.applyCrossover(nextPos,nextPos + 1,otherPop.crossover(pos1,pos2))
-        # Randomize last 10% - HOORAY
-        for elem in self.pop[160:]:
+        # Randomize last 10% 
+        for elem in self.pop[(self.popSize/10) * 9:]:
             elem.randomizeGenes()
+
+    def topBetas(self):
+        return str(self.pop[0].betas()) + '\n'
+
+    def __iter__(self):
+        for elem in self.pop:
+            yield elem
 
     def __str__(self):
         return "\n".join( [ str(element) for element in self.pop] )
+
