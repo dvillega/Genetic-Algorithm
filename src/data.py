@@ -58,9 +58,10 @@ class DataFile(object):
         self.Serial = self.data[:,0]
         self.Native = self.data[:,1]
         self.numProts = np.shape(self.data)[0]
-        
+
+
         # Default Model 1
-        self.eData = np.column_stack((self.Ereg,self.Ep1,self.Ep2,self.Enp,self.Ephi,self.Epsi,self.Esa))
+        self.eData = None
 
     def setModelInfo(self,model):
         # Set our data to whichever Model is chosen
@@ -85,7 +86,50 @@ class DataFile(object):
         else:
             print "WHAT THE DEUCE!!! NO MODEL SELECTED!!!"
 
+    def getNative(self,model):
+        Ereg = self.nativeRow[5]
+        Ep1 = self.nativeRow[6]
+        Ep2 = self.nativeRow[7]
+        Enp = self.nativeRow[8]
+        Ephi = self.nativeRow[9]
+        Epsi = self.nativeRow[10]
+        Esa = self.nativeRow[11]
+        Ereg2 = self.square(Ereg)
+        Ep12 = self.square(Ep1)
+        Ep22 = self.square(Ep2)
+        Enp2 = self.square(Enp)
+        Ephi2 = self.square(Ephi)
+        Epsi2 = self.square(Epsi)
+        Esa2 = self.square(Esa)
+        Ereg3 = np.power(Ereg,3)
+        Ep13 = np.power(Ep1,3)
+        Ep23 = np.power(Ep2,3)
+        Enp3 = np.power(Enp,3)
+        Ephi3 = np.power(Ephi,3)
+        Epsi3 = np.power(Epsi,3)
+        Esa3 = np.power(Esa,3)
+        ones = np.ones(1)
 
+        if model == 1:
+            return np.column_stack((Ereg,Ep1,Ep2,Enp,Ephi,Epsi,Esa))
+        elif model == 2:
+            return np.column_stack((Ereg,Ep1,Ep2,Enp,Ephi,Epsi,Esa,
+                                    Ereg2,Ep12,Ep22,Enp2,Ephi2,Epsi2,Esa2))
+        elif model == 3:
+            return np.column_stack((Ereg,Ep1,Ep2,Enp,Ephi,Epsi,Esa,
+                                    Ereg2,Ep12,Ep22,Enp2,Ephi2,Epsi2,Esa2,
+                                    Ereg3,Ep13,Ep23,Enp3,Ephi3,Epsi3,Esa3,))
+        elif model == 4:
+            return np.column_stack((ones,Ereg,Ep1,Ep2,Enp,Ephi,Epsi,Esa))
+        elif model == 5:
+            return np.column_stack((ones,Ereg,Ep1,Ep2,Enp,Ephi,Epsi,Esa,
+                                    Ereg2,Ep12,Ep22,Enp2,Ephi2,Epsi2,Esa2))
+        elif model == 6:
+            return np.column_stack((ones,Ereg,Ep1,Ep2,Enp,Ephi,Epsi,Esa,
+                                    Ereg2,Ep12,Ep22,Enp2,Ephi2,Epsi2,Esa2,
+                                    Ereg3,Ep13,Ep23,Enp3,Ephi3,Epsi3,Esa3,))
+        else:
+            print "CHOSE WRONG MODEL FOR NATIVE"
 
     def square(self,col):
         sign = np.sign(col)

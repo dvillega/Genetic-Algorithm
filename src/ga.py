@@ -5,7 +5,7 @@ import fitness
 import population
 import copy
 import sys
-from time import time
+#from time import time
 
 
 # Utility mapping to switch on argv model selection
@@ -20,7 +20,7 @@ def f(x):
       6:22,
     }[x]
 
-start = time()
+#start = time()
 
 model = int(sys.argv[1])
 
@@ -36,7 +36,7 @@ dataSetList = [c8, R, M, T]
 for elem in dataSetList:
     elem.setModel(model)
 
-loadTime = time() - start
+#loadTime = time() - start
 
 
 
@@ -63,18 +63,22 @@ pop1.sortPopulation()
 outFH.write('\n\nFinal\n')
 topPop=pop1.pop[0]
 outFH.write(str(topPop.betas()) + '\n')
-outFH.close()
 
 # Calculate C9 info
-c9 = data.DataSet('C9',model)
-topFitC9 = fit.calculateFitness(topPop,C9)
+c9 = data.DataSet('C9')
+c9.setModel(model)
+topFitC9 = FIT.calculateFitness(topPop,c9)
 outFH.write('F1 = ' + str(-topFitC9[0]) + ' F2 = ' + str(topFitC9[1]) + '\n')
+ZFinal = FIT.calculateZScore(topPop,dataSetList,model)
+outFH.write('Per File:' + str(ZFinal[0]) + '\n')
+outFH.write('Zavg: ' + str(ZFinal[1]))
+outFH.close()
 
-end = time()
-elapsed = end - start
-elapsed /= 60.0
-loadTime /= 60.0
-print "Time Loading: " + str(loadTime) + '\n'
-print "Time Processing: " + str((elapsed - loadTime)) + '\n'
-print "Time per step: " + str((elapsed - loadTime) / generations) + '\n'
-print "Minutes spent Total: " + str(elapsed) + '\n'
+#end = time()
+#elapsed = end - start
+#elapsed /= 60.0
+#loadTime /= 60.0
+#print "Time Loading: " + str(loadTime) + '\n'
+#print "Time Processing: " + str((elapsed - loadTime)) + '\n'
+#print "Time per step: " + str((elapsed - loadTime) / generations) + '\n'
+#print "Minutes spent Total: " + str(elapsed) + '\n'

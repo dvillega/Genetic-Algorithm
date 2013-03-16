@@ -67,10 +67,35 @@ class Fitness(object):
 
         return f1,f2
 
-    def updateFitness(self,_pop,_dataSetList):
-        for chromosome in _pop:
-            chromosome.fitness = self.calcuateTotalFitness(chromosome,_dataSetList)
-        _pop.sortPopulation()
+    def calculateZScore(self,_chromosome,_dataSetList,model):
+        #Calculates Zscore (F3) for a chromosome
+        #    _chromosome is the chromosome
+        #    _dataSetList is a list of DataSet objects
+
+        totalNumProts = sum([x.numProts for x in _dataSetList])
+        totalF3 = 0.0
+        zScoreAvg = 0.0
+        zScore = {}
+
+        for dSet in _dataSetList:
+            perFileF3 = 0.0
+            for protein in dSet:
+                eNative = np.dot(protein.getNative(model),_chromosome.betas())
+                eBetters = np.dot(protein.eData,_chromosome.betas())
+                eAvg = np.mean(eBetters)
+                eSd = np.std(eBetters)
+                perFileF3 += (eNative + eAvg) / eSd
+            zScore[dSet.name] = perFileF3 / dSet.numProts
+        for k,v in enumerate(zScore):
+            zScoreAvg += zScore[v]
+        zScoreAvg /= float(len(zScore))
+        return zScore,zScoreAvg
+
+
+#    def updateFitness(self,_pop,_dataSetList):
+#        for chromosome in _pop:
+#            chromosome.fitness = self.calcuateTotalFitness(chromosome,_dataSetList)
+#        _pop.sortPopulation()
 
     def weight(self,x):
         # Utility switch function 
