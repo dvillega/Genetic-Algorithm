@@ -23,7 +23,6 @@ class Fitness(object):
             _chromosome is the chromosome
             _dataSetList is a list of DataSet objects
         """
-
         totalNumProts = sum([x.numProts for x in _dataSetList])
         # Weighted average of dataSets
         totalFitness = 0.0
@@ -51,17 +50,19 @@ class Fitness(object):
         sumTMScores = 0.0
         eBetterList = []
         tmScoreList = []
+        totF1 = 0.0
 
         for protein in _dataSet:
             eBetter = np.dot(protein.eData,_chromosome.betas())
             indexTM = np.argmin(eBetter)
             sumTMScores += protein.TMScore[indexTM]
-            eBetterList.append(eBetter)
-            tmScoreList.append(protein.TMScore)
+            totF1 += stats.pearsonr(eBetter,protein.TMScore)[0]
+            #eBetterList.append(eBetter)
+            #tmScoreList.append(protein.TMScore)
+#        totf1 = stats.pearsonr(np.concatenate(eBetterList),
+#                               np.concatenate(tmScoreList))[0]
 
-        f1 = stats.pearsonr(np.concatenate(eBetterList),
-                               np.concatenate(tmScoreList))[0]
-
+        f1 = totF1 / _dataSet.numProts
         f2 = sumTMScores / _dataSet.numProts
 
         if self.logging:
@@ -96,13 +97,6 @@ class Fitness(object):
             zScoreAvg += zScore[v]
         zScoreAvg /= float(len(zScore))
         return zScore,zScoreAvg
-
-
-    def calculateZScoreNative(self,_dataSetList):
-        """
-        Zfile = Enative
-        """
-        pass
 
     def weight(self,x):
         """

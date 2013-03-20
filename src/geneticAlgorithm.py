@@ -88,6 +88,9 @@ def runGA(model,outFile):
     outFH.close()
 
 def loadData(model):
+    """
+
+    """
     c8 = data.DataSet('C8')
     R = data.DataSet('R')
     M = data.DataSet('M')
