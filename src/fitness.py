@@ -18,9 +18,11 @@ class Fitness(object):
             self.output = open('Fscores.txt','w')
 
     def calculateTotalFitness(self,_chromosome,_dataSetList):
-        #Calculates Total Fitness
-        #    _chromosome is the chromosome
-        #    _dataSetList is a list of DataSet objects
+        """
+        Calculates Total Fitness
+            _chromosome is the chromosome
+            _dataSetList is a list of DataSet objects
+        """
 
         totalNumProts = sum([x.numProts for x in _dataSetList])
         # Weighted average of dataSets
@@ -38,12 +40,14 @@ class Fitness(object):
         return totalFitness
 
     def calculateFitness(self,_chromosome,_dataSet):
-        #Calculates the fitness for an individual dataSet
-        #    _chromosome is the chromosome
-        #    _dataSet is a single dataset object
-        #
-        #    fitness = -F1 + F2
-        #    F2 = mean of TMscore indexed from lowest Ebetter 
+        """
+        Calculates the fitness for an individual dataSet
+
+            _chromosome is the chromosome
+            _dataSet is a single dataset object
+            fitness = -F1 + F2
+            F2 = mean of TMscore indexed from lowest Ebetter 
+        """
         sumTMScores = 0.0
         eBetterList = []
         tmScoreList = []
@@ -68,9 +72,11 @@ class Fitness(object):
         return f1,f2
 
     def calculateZScore(self,_chromosome,_dataSetList,model):
-        #Calculates Zscore (F3) for a chromosome
-        #    _chromosome is the chromosome
-        #    _dataSetList is a list of DataSet objects
+        """
+        Calculates Zscore (F3) for a chromosome
+            _chromosome is the chromosome
+            _dataSetList is a list of DataSet objects
+        """
 
         totalNumProts = sum([x.numProts for x in _dataSetList])
         totalF3 = 0.0
@@ -84,7 +90,7 @@ class Fitness(object):
                 eBetters = np.dot(protein.eData,_chromosome.betas())
                 eAvg = np.mean(eBetters)
                 eSd = np.std(eBetters)
-                perFileF3 += (eNative + eAvg) / eSd
+                perFileF3 += (eNative - eAvg) / eSd
             zScore[dSet.name] = perFileF3 / dSet.numProts
         for k,v in enumerate(zScore):
             zScoreAvg += zScore[v]
@@ -92,13 +98,16 @@ class Fitness(object):
         return zScore,zScoreAvg
 
 
-#    def updateFitness(self,_pop,_dataSetList):
-#        for chromosome in _pop:
-#            chromosome.fitness = self.calcuateTotalFitness(chromosome,_dataSetList)
-#        _pop.sortPopulation()
+    def calculateZScoreNative(self,_dataSetList):
+        """
+        Zfile = Enative
+        """
+        pass
 
     def weight(self,x):
-        # Utility switch function 
+        """
+        Utility switch function
+        """
         return {
             'M': 1.,
             'C8': 2.,

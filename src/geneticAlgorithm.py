@@ -39,12 +39,12 @@ def printFVals(fVals):
 
 
 def runGA(model,outFile):
-    """ 
+    """
     Genetic Algorithm Engine
 
-    This script will run GA on one model, writing out the result 
+    This script will run GA on one model, writing out the result
     """
-    print "Starting GA with " + str(generations) + " on model # " + str(model)
+    print "Starting GA with " + str(generations) + " generations on model # " + str(model)
 
     FIT = fitness.Fitness(True)
     pop1 = population.Population(12,4.0,200,numGenes=f(model),initialize=True)
@@ -64,12 +64,13 @@ def runGA(model,outFile):
         for elem in pop2:
             elem.fitness = FIT.calculateTotalFitness(elem,dataSetList)
         pop2.sortPopulation()
-        outFH.write(pop2.topBetas())
-        outFH.write(printFVals(pop1.pop[0].fVals))
+        #outFH.write(pop2.topBetas())
+        #outFH.write(printFVals(pop1.pop[0].fVals))
         if pop1.pop[0].genes != pop2.pop[0].genes:
             print "Updated Top Beta"
         pop1 = copy.deepcopy(pop2)
 
+#    testChrom = population.Chromosome(
     pop1.sortPopulation()
     outFH.write('\n\nFinal\n')
     topPop=pop1.pop[0]
@@ -101,68 +102,24 @@ def loadData(model):
 ### Start of Engine Script ###
 
 if len(sys.argv) != 4:
-    print "Usage: ./ga.py modelComplexity path/to/out/ generations"
-    print "Model Complexities"
-    print "1-3: No Y intercept 4-6: Y intercept"
-    print "1,4- Linear 2,5- Quadratic 3,6- Cubic"
+    print "Usage: ./ga.py outputPrefix generations numRunsPer"
+#    print "Model Complexities"
+#    print "1-3: No Y intercept 4-6: Y intercept"
+#    print "1,4- Linear 2,5- Quadratic 3,6- Cubic"
     sys.exit(1)
 
-model = int(sys.argv[1])
+#model = int(sys.argv[1])
 
-outFilePath = sys.argv[2]
-generations = int(sys.argv[3])
+outFilePrefix = sys.argv[1]
+generations = int(sys.argv[2])
+numRunsPer = int(sys.argv[3])
 
 dataSetList = loadData(1)
 
 for i in range(1,7):
-    for j in range(10):
-        print "Run #" + str(j) + "of 10"
-        # Gonna run this 10 times per
+    for j in range(numRunsPer):
+        print "Run #" + str(j+1) + " of " + str(numRunsPer)
         for dSet in dataSetList:
             dSet.setModel(i)
-        outfile = outFilePath + str(i) + "_run" + str(j) + ".dat"
+        outfile = "../processedFiles/" + outFilePrefix + str(i) + "_run" + str(j) + ".dat"
         runGA(i,outfile)
-
-
-"""
-FIT = fitness.Fitness(True)
-pop1 = population.Population(12,4.0,200,numGenes=f(model),initialize=True)
-pop2 = population.Population(12,4.0,200,numGenes=f(model),initialize=False)
-outFH = open(outFilePath,'w')
-for elem in pop1:
-    elem.fitness = FIT.calculateTotalFitness(elem,dataSetList)
-pop1.sortPopulation()
-outFH.write('Starting Population \n')
-outFH.write(pop1.topBetas())
-outFH.write(printFVals(pop1.pop[0].fVals))
-
-count = 0
-for i in xrange(generations):
-    print "Generation: " + str(i)
-    pop2.stepGeneration(pop1)
-    for elem in pop2:
-        elem.fitness = FIT.calculateTotalFitness(elem,dataSetList)
-    pop2.sortPopulation()
-    outFH.write(pop2.topBetas())
-    outFH.write(printFVals(pop1.pop[0].fVals))
-    if pop1.pop[0].genes != pop2.pop[0].genes:
-        print "Updated Top Beta
-    pop1 = copy.deepcopy(pop2)
-
-pop1.sortPopulation()
-outFH.write('\n\nFinal\n')
-topPop=pop1.pop[0]
-outFH.write(str(topPop.betas()) + '\n')
-outFH.write(printFVals(pop1.pop[0].fVals))
-
-# Calculate C9 info
-c9 = data.DataSet('C9')
-c9.setModel(model)
-topFitC9 = FIT.calculateFitness(topPop,c9)
-outFH.write('F1 = ' + str(-topFitC9[0]) + ' F2 = ' + str(topFitC9[1]) + '\n')
-ZFinal = FIT.calculateZScore(topPop,dataSetList,model)
-outFH.write('Per File:' + str(ZFinal[0]) + '\n')
-outFH.write('Zavg: ' + str(ZFinal[1]))
-outFH.close()
-"""
-
