@@ -10,7 +10,6 @@ import sys
 
 ### Functions ###
 
-# 
 def f(x):
     """
     Utility mapping to convert model complexity

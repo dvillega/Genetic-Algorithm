@@ -1,0 +1,15 @@
+DONE:Calculate F3 Zavg
+    Zfile = (with best Betas) Enative + Eavg of decoys / Esd of decoys
+
+DONE:Roulette wheel population crossover
+
+refactor GA engine to be a function we can run
+run all models (so only loading data once)
+
+parameterize Population, Crossover / Elite % - 
+
+
+F1 - PCC - calculate per file and you average them
+Zscore - per file avg across everything
+
+Zscore native - eAvg = np.mean(TMScore) eSD = np.std(TMScore)
