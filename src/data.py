@@ -64,7 +64,9 @@ class DataFile(object):
         self.eData = None
 
     def setModelInfo(self,model):
-        # Set our data to whichever Model is chosen
+        """
+        Set our data to whichever Model is chosen
+        """
         if model == 1:
             self.eData = np.column_stack((self.Ereg,self.Ep1,self.Ep2,self.Enp,self.Ephi,self.Epsi,self.Esa))
         elif model == 2:
@@ -138,11 +140,14 @@ class DataFile(object):
 
 
 class DataSet(object):
-    """ DataSet for Protein Energy Function Project in Pattern Rec
-        Initialization will load all files as numpy 2d arrays with appropriate
-        info
-        Walk all files in that directory, open each csv, store it in memory
-        close the files"""
+    """ 
+    DataSet for Protein Energy Function Project in Pattern Rec
+
+    Initialization will load all files as numpy 2d arrays with appropriate
+    info
+    Walk all files in that directory, open each csv, store it in memory
+    close the files
+    """
 
     def __init__(self,name):
         self.name = name
