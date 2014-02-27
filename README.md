@@ -1,11 +1,7 @@
-PatternRec
+Genetic Algorithm
 ==========
 
-Genetic algorithm for pattern recognition course UNO-SPR 2013
-
-Project to refine a polynomial fitted energy predictor for 
-my graduate pattern recognition course.
-
+Genetic algorithm in python for pattern recognition course
 
 Overview of process
 
